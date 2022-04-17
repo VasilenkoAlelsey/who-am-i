@@ -53,8 +53,9 @@ public class RandomGame implements Game {
 		} else {
 			String question = currentGuesser.getQuestion();
 			answers = currentTurn.getOtherPlayers().stream()
-				.map(player -> player.answerQuestion(question, this.playersCharacter.get(currentGuesser.getName())))
-				.collect(Collectors.toSet());
+				.map(player -> player.answerQuestion(question
+						, this.playersCharacter.get(currentGuesser.getName())
+						, currentGuesser)).collect(Collectors.toSet());
 			long positiveCount = answers.stream().filter(a -> YES.equals(a)).count();
 			long negativeCount = answers.stream().filter(a -> NO.equals(a)).count();
 			return positiveCount > negativeCount;
@@ -64,14 +65,15 @@ public class RandomGame implements Game {
 
 	@Override
 	public void assignCharacters() {
+		System.out.println("---------------------------------------------");
+		System.out.println("All players have been connected! Let's start!");
+		System.out.println("---------------------------------------------");
 		players.stream().forEach(player -> this.playersCharacter.put(player.getName(), this.getRandomCharacter()));
-		
 	}
 	
 	@Override
 	public void initGame() {
 		this.currentTurn = new TurnImpl(this.players);
-		
 	}
 
 

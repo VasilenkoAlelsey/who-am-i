@@ -6,7 +6,7 @@ public interface Player {
 	
 	String getQuestion();
 	
-	String answerQuestion(String question, String character);
+	String answerQuestion(String question, String character, Player player);
 	
 	String getGuess();
 	

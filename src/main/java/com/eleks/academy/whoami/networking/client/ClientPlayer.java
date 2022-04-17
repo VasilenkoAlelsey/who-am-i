@@ -10,17 +10,23 @@ import com.eleks.academy.whoami.core.Player;
 
 public class ClientPlayer implements Player {
 
+	private int index;
 	private String name;
 	private Socket socket;
 	private BufferedReader reader;
 	private PrintStream writer;
 
-	public ClientPlayer(String name, Socket socket) throws IOException {
+	public ClientPlayer(int index, String name, Socket socket) throws IOException {
+		this.index = index;
 		this.name = name;
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		this.writer = new PrintStream(socket.getOutputStream());
 	}
+
+//	public int getIndex() {
+//		return this.index;
+//	}
 
 	@Override
 	public String getName() {
@@ -32,7 +38,7 @@ public class ClientPlayer implements Player {
 		String question = "";
 
 		try {
-			writer.println("Ask your questinon: ");
+			writer.println("Ask your question: ");
 			question = reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -42,11 +48,11 @@ public class ClientPlayer implements Player {
 	}
 
 	@Override
-	public String answerQuestion(String question, String character) {
+	public String answerQuestion(String question, String character, Player player) {
 		String answer = "";
 		
 		try {
-			writer.println("Answer second player question: " + question + " Character is:" + character);
+			writer.println(player.getName() + " answer question: " + question + " Character is:" + character);
 			answer = reader.readLine();
 			System.out.println(name + " answered: " + answer);
 		} catch (IOException e) {

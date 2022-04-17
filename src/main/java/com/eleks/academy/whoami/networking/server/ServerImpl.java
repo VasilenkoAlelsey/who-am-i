@@ -13,7 +13,7 @@ import com.eleks.academy.whoami.core.impl.RandomPlayer;
 
 public class ServerImpl implements Server {
 
-	private List<String> characters = List.of("Batman", "Superman");
+	private List<String> characters = List.of("Batman", "Superman", "Pinocchio", "Baby Shark");
 	private List<String> questions = List.of("Am i a human?", "Am i a character from a movie?");
 	private List<String> guessess = List.of("Batman", "Superman");
 
@@ -34,7 +34,7 @@ public class ServerImpl implements Server {
 	}
 
 	@Override
-	public Socket waitForPlayer(Game game) throws IOException {
+	public Socket waitForPlayer() throws IOException {
 		return serverSocket.accept();
 	}
 
@@ -42,7 +42,6 @@ public class ServerImpl implements Server {
 	public void addPlayer(Player player) {
 		game.addPlayer(player);
 		System.out.println("Player: " + player.getName() + " Connected to the game!");
-
 	}
 
 	@Override
