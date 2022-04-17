@@ -37,6 +37,7 @@ public class ClientPlayer implements Player {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
 		return question;
 	}
 
@@ -45,8 +46,9 @@ public class ClientPlayer implements Player {
 		String answer = "";
 		
 		try {
-			writer.println("Answer second player question: " + question + "Character is:"+ character);
+			writer.println("Answer second player question: " + question + " Character is:" + character);
 			answer = reader.readLine();
+			System.out.println(name + " answered: " + answer);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -57,15 +59,14 @@ public class ClientPlayer implements Player {
 	@Override
 	public String getGuess() {
 		String answer = "";
-		
-	
+
 		try {
 			writer.println("Write your guess: ");
 			answer = reader.readLine();
 		} catch (IOException e) {
-
 			e.printStackTrace();
 		}
+
 		return answer;
 	}
 
@@ -76,11 +77,12 @@ public class ClientPlayer implements Player {
 		try {
 			writer.println("Are you ready to guess? ");
 			answer = reader.readLine();
+			System.out.println("Is " + name + " ready to guess?: " + answer);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		return answer.equals("Yes") ? true : false;
+		return answer.equals("Yes");
 	}
 
 	@Override
@@ -91,9 +93,9 @@ public class ClientPlayer implements Player {
 			writer.println("Write your answer: ");
 			answer = reader.readLine();
 		} catch (IOException e) {
-
 			e.printStackTrace();
 		}
+
 		return answer;
 	}
 
