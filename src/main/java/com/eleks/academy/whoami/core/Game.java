@@ -13,5 +13,4 @@ public interface Game {
 	void changeTurn();
 
 	void initGame();
-
 }

@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 
 import com.eleks.academy.whoami.core.Game;
+import com.eleks.academy.whoami.core.impl.RandomPlayer;
 import com.eleks.academy.whoami.networking.client.ClientPlayer;
 import com.eleks.academy.whoami.networking.server.ServerImpl;
 

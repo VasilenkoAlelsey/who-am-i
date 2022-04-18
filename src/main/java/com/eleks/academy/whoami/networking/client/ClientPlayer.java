@@ -16,6 +16,8 @@ public class ClientPlayer implements Player {
 	private BufferedReader reader;
 	private PrintStream writer;
 
+	private String result = "";
+
 	public ClientPlayer(int index, String name, Socket socket) throws IOException {
 		this.index = index;
 		this.name = name;
@@ -23,10 +25,6 @@ public class ClientPlayer implements Player {
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		this.writer = new PrintStream(socket.getOutputStream());
 	}
-
-//	public int getIndex() {
-//		return this.index;
-//	}
 
 	@Override
 	public String getName() {
@@ -40,6 +38,7 @@ public class ClientPlayer implements Player {
 		try {
 			writer.println("Ask your question: ");
 			question = reader.readLine();
+			System.out.println("Player: " + name + ". Asks: " + question);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -50,11 +49,12 @@ public class ClientPlayer implements Player {
 	@Override
 	public String answerQuestion(String question, String character, Player player) {
 		String answer = "";
-		
+
 		try {
-			writer.println(player.getName() + " answer question: " + question + " Character is:" + character);
+			writer.println("Player: " + player.getName() + ". answer question: "
+					+ question + " (Character is:" + character + ")");
 			answer = reader.readLine();
-			System.out.println(name + " answered: " + answer);
+			System.out.println("Player: " + name + ". Answers: " + answer);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -67,8 +67,10 @@ public class ClientPlayer implements Player {
 		String answer = "";
 
 		try {
+			writer.println();
 			writer.println("Write your guess: ");
 			answer = reader.readLine();
+			System.out.println("Player: " + name + ". Guesses: " + answer);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -92,11 +94,12 @@ public class ClientPlayer implements Player {
 	}
 
 	@Override
-	public String answerGuess(String guess, String character) {
+	public String answerGuess(String guess, String character, Player player) {
 		String answer = "";
 		
 		try {
-			writer.println("Write your answer: ");
+			writer.println("Player: " + player.getName() + ". guesses: Am i a "
+					+ guess + "? (Character is:" + character + ")");
 			answer = reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -105,4 +108,9 @@ public class ClientPlayer implements Player {
 		return answer;
 	}
 
+	@Override
+	public void isWin() {
+		writer.println(name + " is WINNER!)");
+		System.out.println(name + " is WINNER!)");
+	}
 }

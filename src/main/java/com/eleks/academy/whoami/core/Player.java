@@ -12,6 +12,7 @@ public interface Player {
 	
 	boolean isReadyForGuess();
 
-	String answerGuess(String guess, String character);
-	
+	String answerGuess(String guess, String character, Player player);
+
+	void isWin();
 }
