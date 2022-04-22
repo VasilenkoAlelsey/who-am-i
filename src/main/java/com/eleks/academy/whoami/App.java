@@ -3,8 +3,14 @@ package com.eleks.academy.whoami;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.eleks.academy.whoami.core.Game;
+import com.eleks.academy.whoami.core.impl.RandomPlayer;
 import com.eleks.academy.whoami.networking.client.ClientPlayer;
 import com.eleks.academy.whoami.networking.server.ServerImpl;
 
@@ -16,19 +22,15 @@ public class App {
 
 		Game game = server.startGame();
 
-		var socket = server.waitForPlayer(game);
+		BufferedReader enterNumberOfPlayers = new BufferedReader(new InputStreamReader(System.in));
+		int numberOfPlayers = Integer.parseInt(enterNumberOfPlayers.readLine());
+		System.out.println("Waiting for " + numberOfPlayers + " clients connect....");
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		game.playersConnect(server, numberOfPlayers);
 
 		boolean gameStatus = true;
 
-		var playerName = reader.readLine();
-
-		server.addPlayer(new ClientPlayer(playerName, socket));
-
 		game.assignCharacters();
-
-		game.initGame();
 
 		while (gameStatus) {
 			boolean turnResult = game.makeTurn();
@@ -40,7 +42,9 @@ public class App {
 			gameStatus = !game.isFinished();
 		}
 
-		server.stopServer(socket, reader);
+		server.stopServer(game, numberOfPlayers);
+		enterNumberOfPlayers.close();
+
 	}
 
 }
