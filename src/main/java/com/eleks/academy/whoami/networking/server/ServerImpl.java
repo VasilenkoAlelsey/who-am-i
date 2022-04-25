@@ -4,41 +4,37 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.eleks.academy.whoami.core.Game;
 import com.eleks.academy.whoami.core.Player;
 import com.eleks.academy.whoami.core.impl.RandomGame;
-import com.eleks.academy.whoami.core.impl.RandomPlayer;
 
 public class ServerImpl implements Server {
-
-	private List<String> characters = List.of("Batman", "Superman", "Pinocchio", "Baby Shark");
+	private List<String> characters = List.of("Batman", "Superman");
 	private List<String> questions = List.of("Am i a human?", "Am i a character from a movie?");
 	private List<String> guessess = List.of("Batman", "Superman");
-	private Map<Integer, Socket> playersSocketMap;
-	private Map<Integer, BufferedReader> playersReaderMap;
-
 	private RandomGame game = new RandomGame(characters);
 
 	private final ServerSocket serverSocket;
+	private final List<Socket> openSockets = new ArrayList<>();
 
 	public ServerImpl(int port) throws IOException {
 		this.serverSocket = new ServerSocket(port);
 	}
-
 	@Override
-	public Game startGame() {
-		game.addPlayer(new RandomPlayer("Bot", questions, guessess));
+	public Game startGame() throws IOException {
 		System.out.println("Server starts");
-		System.out.println("Enter number of players");
+		System.out.println("Waiting for a client connect....");
 		return game;
 	}
 
 	@Override
-	public Socket waitForPlayer() throws IOException {
-		return serverSocket.accept();
+	public Socket waitForPlayer(Game game) throws IOException {
+		Socket player = serverSocket.accept();
+		openSockets.add(player);
+		return player;
 	}
 
 	@Override
@@ -48,13 +44,13 @@ public class ServerImpl implements Server {
 	}
 
 	@Override
-	public void stopServer(Game game, int numberOfPlayers) throws IOException {
-		playersReaderMap = game.getPlayersReaderMap();
-		playersSocketMap = game.getPlayersSocketMap();
-
-		for (int i = 0; i < numberOfPlayers; i++) {
-			playersSocketMap.get(i).close();
-			playersReaderMap.get(i).close();
+	public void stop() {
+		for (Socket s : openSockets) {
+			try {
+				s.close();
+			} catch (IOException e) {
+				System.err.println(String.format("Could not close a socket (%s)", e.getMessage()));
+			}
 		}
 	}
 

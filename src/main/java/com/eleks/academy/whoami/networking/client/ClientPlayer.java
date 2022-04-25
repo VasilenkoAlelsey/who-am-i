@@ -19,92 +19,70 @@ public class ClientPlayer implements Player {
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		this.writer = new PrintStream(socket.getOutputStream());
 	}
-
 	@Override
 	public String getName() {
 		return this.name;
 	}
-
 	@Override
 	public String getQuestion() {
 		String question = "";
-
 		try {
-			writer.println("Ask your question: ");
+			writer.println("Ask your questinon: ");
 			question = reader.readLine();
-			System.out.println("Player: " + name + ". Asks: " + question);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		return question;
 	}
-
 	@Override
-	public String answerQuestion(String question, String character, Player player) {
+	public String answerQuestion(String question, String character) {
 		String answer = "";
 
 		try {
-			writer.println("Player: " + player.getName() + ". answer question: "
-					+ question + " (Character is:" + character + ")");
+			writer.println("Answer second player question: " + question + "Character is:"+ character);
 			answer = reader.readLine();
-			System.out.println("Player: " + name + ". Answers: " + answer);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return answer;
 	}
-
 	@Override
 	public String getGuess() {
 		String answer = "";
 
+
 		try {
-			writer.println();
 			writer.println("Write your guess: ");
 			answer = reader.readLine();
-			System.out.println("Player: " + name + ". Guesses: " + answer);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		return answer;
 	}
-
 	@Override
 	public boolean isReadyForGuess() {
 		String answer = "";
-		
+
 		try {
 			writer.println("Are you ready to guess? ");
 			answer = reader.readLine();
-			System.out.println("Is " + name + " ready to guess?: " + answer);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return answer.equals("Yes");
 	}
-
 	@Override
-	public String answerGuess(String guess, String character, Player player) {
+	public String answerGuess(String guess, String character) {
 		String answer = "";
-		
+
 		try {
-			writer.println("Player: " + player.getName() + ". guesses: Am i a "
-					+ guess + "? (Character is:" + character + ")");
+			writer.println("Write your answer: ");
 			answer = reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		return answer;
-	}
-
-	@Override
-	public void congratulatoryMessage() {
-		writer.println(name + " is WINNER!)");
-		System.out.println(name + " is WINNER!)");
 	}
 }

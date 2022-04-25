@@ -11,10 +11,10 @@ public interface Server {
 	
 	Game startGame() throws IOException;
 	
-	Socket waitForPlayer() throws IOException;
+	Socket waitForPlayer(Game game) throws IOException;
 	
 	void addPlayer(Player player);
-	
-	void stopServer(Game game, int numberOfPlayers) throws IOException;
+
+	void stop();
 	
 }

@@ -20,10 +20,4 @@ public interface Game {
 	void changeTurn();
 
 	void initGame();
-
-	void playersConnect(ServerImpl server, int numberOfPlayers) throws IOException;
-
-	Map<Integer, Socket> getPlayersSocketMap();
-
-	Map<Integer, BufferedReader> getPlayersReaderMap();
 }

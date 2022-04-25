@@ -4,11 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import com.eleks.academy.whoami.core.Game;
 import com.eleks.academy.whoami.core.Player;
@@ -22,8 +18,7 @@ public class RandomGame implements Game {
 	private List<Player> players = new ArrayList<>();
 	private List<String> availableCharacters;
 	private Turn currentTurn;
-	private Map<Integer, Socket> playersSocketMap = new HashMap<>();
-	private Map<Integer, BufferedReader> playersReaderMap = new HashMap<>();
+	private Set<String> answers = new HashSet<>();
 	
 	private final static String YES = "Yes";
 	private final static String NO = "No";
@@ -40,34 +35,40 @@ public class RandomGame implements Game {
 	@Override
 	public boolean makeTurn() {
 		Player currentGuesser = currentTurn.getGuesser();
-		Set<String> answers;
+
 		if (currentGuesser.isReadyForGuess()) {
+			List<Player> otherPlayers = currentTurn.getOtherPlayers();
 			String guess = currentGuesser.getGuess();
-			answers = currentTurn.getOtherPlayers().stream()
-					.map(player -> player.answerGuess(guess, this.playersCharacter.get(currentGuesser.getName()),
-					currentGuesser))
-					.collect(Collectors.toSet());
+			for (int i = 0; i < otherPlayers.size(); i++) {
+				Player otherPlayer = otherPlayers.get(i);
+				Thread thread = new Thread(() -> addGuesses(otherPlayer, guess, currentGuesser));
+				thread.start();
+			}
+
 			long positiveCount = answers.stream().filter(a -> YES.equals(a)).count();
 			long negativeCount = answers.stream().filter(a -> NO.equals(a)).count();
-			
+
 			boolean win = positiveCount > negativeCount;
-			
+
 			if (win) {
-				currentGuesser.congratulatoryMessage();
 				players.remove(currentGuesser);
 			}
 			return win;
-			
+
 		} else {
+			List<Player> otherPlayers = currentTurn.getOtherPlayers();
 			String question = currentGuesser.getQuestion();
-			answers = currentTurn.getOtherPlayers().stream()
-				.map(player -> player.answerQuestion(question, this.playersCharacter.get(currentGuesser.getName()),
-				currentGuesser)).collect(Collectors.toSet());
+
+			for (int i = 0; i < otherPlayers.size(); i++) {
+				Player otherPlayer = otherPlayers.get(i);
+				Thread thread = new Thread(() -> addQuestions(otherPlayer, question, currentGuesser));
+				thread.start();
+			}
+
 			long positiveCount = answers.stream().filter(a -> YES.equals(a)).count();
 			long negativeCount = answers.stream().filter(a -> NO.equals(a)).count();
 			return positiveCount > negativeCount;
 		}
-		
 	}
 
 	@Override
@@ -99,33 +100,11 @@ public class RandomGame implements Game {
 		this.currentTurn.changeTurn();
 	}
 
-	@Override
-	public void playersConnect(ServerImpl server, int numberOfPlayers) throws IOException {
-
-		for (int i = 0; i < numberOfPlayers; i++) {
-			Socket socket = server.waitForPlayer();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			String playerName = reader.readLine();
-			ClientPlayer clientPlayer = new ClientPlayer(playerName, socket);
-
-			playersReaderMap.put(i, reader);
-			playersSocketMap.put(i, socket);
-
-			server.addPlayer(clientPlayer);
-
-			if (i + 1 == numberOfPlayers) {
-				initGame();
-			}
-		}
+	private void addGuesses(Player otherPlayer, String guess, Player currentGuesser) {
+		answers.add(otherPlayer.answerGuess(guess, this.playersCharacter.get(currentGuesser.getName())));
 	}
 
-	@Override
-	public Map<Integer, Socket> getPlayersSocketMap() {
-		return this.playersSocketMap;
-	}
-
-	@Override
-	public Map<Integer, BufferedReader> getPlayersReaderMap() {
-		return this.playersReaderMap;
+	private void addQuestions(Player otherPlayer, String question, Player currentGuesser) {
+		answers.add(otherPlayer.answerQuestion(question, this.playersCharacter.get(currentGuesser.getName())));
 	}
 }
