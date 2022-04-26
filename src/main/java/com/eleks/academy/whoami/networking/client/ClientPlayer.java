@@ -51,7 +51,6 @@ public class ClientPlayer implements Player {
 	public String getGuess() {
 		String answer = "";
 
-
 		try {
 			writer.println("Write your guess: ");
 			answer = reader.readLine();
