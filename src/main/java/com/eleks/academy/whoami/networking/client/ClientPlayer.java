@@ -51,7 +51,7 @@ public class ClientPlayer implements Player, AutoCloseable {
 
 	private String giveQuestion() {
 		try {
-			writer.println("Ask your question: ");
+			writer.println("Ask your questinon: ");
 			return reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -62,30 +62,30 @@ public class ClientPlayer implements Player, AutoCloseable {
 	@Override
 	public String answerQuestion(String question, String character) {
 		String answer = "";
-		
+
 		try {
 			writer.println("Answer second player question: " + question + "Character is:"+ character);
 			answer = reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return answer;
 	}
 
 	@Override
-	public String getGuess() {
-		String answer = "";
-		
-	
+	public Future<String> getGuess() {
+		return executor.submit(this::giveGuess);
+	}
+
+	private String giveGuess() {
 		try {
 			writer.println("Write your guess: ");
-			answer = reader.readLine();
+			return reader.readLine();
 		} catch (IOException e) {
-
 			e.printStackTrace();
+			return "";
 		}
-		return answer;
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public class ClientPlayer implements Player, AutoCloseable {
 			e.printStackTrace();
 		}
 		
-		return answer.equals("Yes");
+		return answer.equals("Yes") ? true : false;
 	}
 
 	@Override

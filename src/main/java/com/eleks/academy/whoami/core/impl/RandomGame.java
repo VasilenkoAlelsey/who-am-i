@@ -63,7 +63,7 @@ public class RandomGame implements Game {
 			throw new RuntimeException("Failed to obtain a player's name", e);
 		}
 		if (currentGuesser.isReadyForGuess()) {
-			String guess = currentGuesser.getGuess();
+			String guess = String.valueOf(currentGuesser.getGuess());
 			answers = currentTurn.getOtherPlayers().stream()
 					.map(player -> player.answerGuess(guess, this.playersCharacter.get(guessersName)))
 					.collect(Collectors.toSet());
