@@ -87,19 +87,20 @@ public class ClientPlayer implements Player, AutoCloseable {
 			return "";
 		}
 	}
-
+//////////////////////////////////////////
 	@Override
-	public boolean isReadyForGuess() {
-		String answer = "";
-		
+	public Future<String> isReadyForGuess() {
+		return executor.submit(this::getAvailableToRespond);
+	}
+
+	private String getAvailableToRespond() {
 		try {
 			writer.println("Are you ready to guess? ");
-			answer = reader.readLine();
+			return reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
+			return "";
 		}
-		
-		return answer.equals("Yes") ? true : false;
 	}
 
 	@Override

@@ -14,9 +14,8 @@ public interface Player {
 	String answerQuestion(String question, String character);
 
 	Future<String> getGuess();
-	
-	// TODO: return Future<String>
-	boolean isReadyForGuess();
+
+	Future<String> isReadyForGuess();
 
 	// TODO: return Future<String>
 	String answerGuess(String guess, String character);

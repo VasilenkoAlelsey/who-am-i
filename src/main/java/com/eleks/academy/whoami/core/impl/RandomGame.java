@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import com.eleks.academy.whoami.core.Game;
 import com.eleks.academy.whoami.core.Player;
 import com.eleks.academy.whoami.core.Turn;
-import com.eleks.academy.whoami.networking.client.ClientPlayer;
 
 public class RandomGame implements Game {
 
@@ -62,7 +61,8 @@ public class RandomGame implements Game {
 			// TODO: Add custom runtime exception implementation
 			throw new RuntimeException("Failed to obtain a player's name", e);
 		}
-		if (currentGuesser.isReadyForGuess()) {
+		String guesserAnswer = String.valueOf(currentGuesser.isReadyForGuess());
+		if (guesserAnswer.equals("Yes")) {
 			String guess = String.valueOf(currentGuesser.getGuess());
 			answers = currentTurn.getOtherPlayers().stream()
 					.map(player -> player.answerGuess(guess, this.playersCharacter.get(guessersName)))
