@@ -78,9 +78,15 @@ public class RandomGame implements Game {
 			return win;
 			
 		} else {
-			String question = currentGuesser.getQuestion();
+			String question;
+			try {
+				question = currentGuesser.getQuestion().get();
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException("Failed to obtain a player's qestion", e);
+			}
+			String playerQuestion = question;
 			answers = currentTurn.getOtherPlayers().stream()
-				.map(player -> player.answerQuestion(question, this.playersCharacter.get(guessersName)))
+				.map(player -> player.answerQuestion(playerQuestion, this.playersCharacter.get(guessersName)))
 				.collect(Collectors.toSet());
 			long positiveCount = answers.stream().filter(a -> YES.equals(a)).count();
 			long negativeCount = answers.stream().filter(a -> NO.equals(a)).count();

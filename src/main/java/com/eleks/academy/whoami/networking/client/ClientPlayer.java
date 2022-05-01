@@ -45,16 +45,18 @@ public class ClientPlayer implements Player, AutoCloseable {
 	}
 
 	@Override
-	public String getQuestion() {
-		String question = "";
+	public Future<String> getQuestion() {
+		return executor.submit(this::giveQuestion);
+	}
 
+	private String giveQuestion() {
 		try {
-			writer.println("Ask your questinon: ");
-			question = reader.readLine();
+			writer.println("Ask your question: ");
+			return reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
+			return "";
 		}
-		return question;
 	}
 
 	@Override
@@ -97,7 +99,7 @@ public class ClientPlayer implements Player, AutoCloseable {
 			e.printStackTrace();
 		}
 		
-		return answer.equals("Yes") ? true : false;
+		return answer.equals("Yes");
 	}
 
 	@Override
