@@ -20,6 +20,9 @@ public class ClientPlayer implements Player, AutoCloseable {
 
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
+	private String question;
+	private String character;
+
 	public ClientPlayer(Socket socket) throws IOException {
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -60,17 +63,20 @@ public class ClientPlayer implements Player, AutoCloseable {
 	}
 
 	@Override
-	public String answerQuestion(String question, String character) {
-		String answer = "";
+	public Future<String> answerQuestion(String question, String character) {
+		this.question = question;
+		this.character = character;
+		return executor.submit(this::getAnswerQuestion);
+	}
 
+	private String getAnswerQuestion() {
 		try {
-			writer.println("Answer second player question: " + question + "Character is:"+ character);
-			answer = reader.readLine();
+			writer.println("Answer second player question: " + this.question + "Character is:"+ this.character);
+			return reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
+			return "";
 		}
-
-		return answer;
 	}
 
 	@Override
@@ -87,7 +93,7 @@ public class ClientPlayer implements Player, AutoCloseable {
 			return "";
 		}
 	}
-//////////////////////////////////////////
+
 	@Override
 	public Future<String> isReadyForGuess() {
 		return executor.submit(this::getAvailableToRespond);
@@ -104,17 +110,18 @@ public class ClientPlayer implements Player, AutoCloseable {
 	}
 
 	@Override
-	public String answerGuess(String guess, String character) {
-		String answer = "";
-		
+	public Future<String> answerGuess() {
+		return executor.submit(this::getAnswerGuess);
+	}
+
+	private String getAnswerGuess() {
 		try {
 			writer.println("Write your answer: ");
-			answer = reader.readLine();
+			return reader.readLine();
 		} catch (IOException e) {
-
 			e.printStackTrace();
+			return "";
 		}
-		return answer;
 	}
 
 	@Override

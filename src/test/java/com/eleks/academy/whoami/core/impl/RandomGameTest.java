@@ -52,7 +52,7 @@ class RandomGameTest {
 		}
 
 		@Override
-		public String answerQuestion(String question, String character) {
+		public Future<String> answerQuestion(String question, String character) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -67,7 +67,7 @@ class RandomGameTest {
 		}
 
 		@Override
-		public String answerGuess(String guess, String character) {
+		public Future<String> answerGuess() {
 			throw new UnsupportedOperationException();
 		}
 

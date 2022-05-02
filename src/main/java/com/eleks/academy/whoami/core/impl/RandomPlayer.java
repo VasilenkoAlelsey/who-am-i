@@ -36,18 +36,18 @@ public class RandomPlayer implements Player {
 	}
 
 	@Override
-	public String answerQuestion(String question, String character) {
+	public Future<String> answerQuestion(String question, String character) {
 		String answer = Math.random() < 0.5 ? "Yes" : "No";
 		System.out.println("Player: " + name + ". Answers: " + answer);
-		return answer;
+		return CompletableFuture.completedFuture(answer);
 	}
 	
 
 	@Override
-	public String answerGuess(String guess, String character) {
+	public Future<String> answerGuess() {
 		String answer = Math.random() < 0.5 ? "Yes" : "No";
 		System.out.println("Player: " + name + ". Answers: " + answer);
-		return answer;
+		return CompletableFuture.completedFuture(answer);
 	}
 
 	@Override

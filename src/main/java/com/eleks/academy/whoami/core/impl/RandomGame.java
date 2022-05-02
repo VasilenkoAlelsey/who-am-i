@@ -46,14 +46,14 @@ public class RandomGame implements Game {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (TimeoutException e) {
-			System.err.println("Player did not suggest a charatern within %d %s".formatted(DURATION, UNIT));
+			System.err.printf("Player did not suggest a character within %d %s%n", DURATION, UNIT);
 		}
 	}
 
 	@Override
 	public boolean makeTurn() {
 		Player currentGuesser = currentTurn.getGuesser();
-		Set<String> answers;
+		Set<Future<String>> answers;
 		String guessersName;
 		try {
 			guessersName = currentGuesser.getName().get(DURATION, UNIT);
@@ -65,10 +65,10 @@ public class RandomGame implements Game {
 		if (guesserAnswer.equals("Yes")) {
 			String guess = String.valueOf(currentGuesser.getGuess());
 			answers = currentTurn.getOtherPlayers().stream()
-					.map(player -> player.answerGuess(guess, this.playersCharacter.get(guessersName)))
+					.map(Player::answerGuess)
 					.collect(Collectors.toSet());
-			long positiveCount = answers.stream().filter(a -> YES.equals(a)).count();
-			long negativeCount = answers.stream().filter(a -> NO.equals(a)).count();
+			long positiveCount = answers.stream().filter(a -> YES.equals(String.valueOf(a))).count();
+			long negativeCount = answers.stream().filter(a -> NO.equals(String.valueOf(a))).count();
 			
 			boolean win = positiveCount > negativeCount;
 			
@@ -82,14 +82,14 @@ public class RandomGame implements Game {
 			try {
 				question = currentGuesser.getQuestion().get();
 			} catch (InterruptedException | ExecutionException e) {
-				throw new RuntimeException("Failed to obtain a player's qestion", e);
+				throw new RuntimeException("Failed to obtain a player's question", e);
 			}
 			String playerQuestion = question;
 			answers = currentTurn.getOtherPlayers().stream()
 				.map(player -> player.answerQuestion(playerQuestion, this.playersCharacter.get(guessersName)))
 				.collect(Collectors.toSet());
-			long positiveCount = answers.stream().filter(a -> YES.equals(a)).count();
-			long negativeCount = answers.stream().filter(a -> NO.equals(a)).count();
+			long positiveCount = answers.stream().filter(a -> YES.equals(String.valueOf(a))).count();
+			long negativeCount = answers.stream().filter(a -> NO.equals(String.valueOf(a))).count();
 			return positiveCount > negativeCount;
 		}
 		
