@@ -2,15 +2,25 @@ package com.eleks.academy.whoami.core.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
+import com.eleks.academy.whoami.networking.client.ClientPlayer;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.function.Executable;
 
 import com.eleks.academy.whoami.core.Game;
 import com.eleks.academy.whoami.core.Player;
+
+import javax.print.attribute.standard.PagesPerMinute;
 
 class RandomGameTest {
 
@@ -24,6 +34,15 @@ class RandomGameTest {
 				() -> assertTrue(p1.suggested),
 				() -> assertTrue(p2.suggested),
 		});
+	}
+
+	@Test
+	void testAddPlayerToTimeoutException() throws InterruptedException, IOException {
+		ServerSocket serverSocket = new ServerSocket(888);
+		ClientPlayer clientPlayer = new ClientPlayer(serverSocket.accept());
+		RandomGame randomGame = new RandomGame(List.of(clientPlayer), new ArrayList<>());
+//		assertTrue(randomGame.getPlayers().isEmpty());
+		assertTimeout(Duration.ofMinutes(2), () -> randomGame.getPlayers());
 	}
 
 	private static final class TestPlayer implements Player {

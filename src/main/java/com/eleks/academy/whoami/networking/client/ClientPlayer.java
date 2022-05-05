@@ -31,7 +31,6 @@ public class ClientPlayer implements Player, AutoCloseable {
 
 	@Override
 	public Future<String> getName() {
-		// TODO: save name for future
 		return executor.submit(this::askName);
 	}
 
@@ -54,7 +53,7 @@ public class ClientPlayer implements Player, AutoCloseable {
 
 	private String giveQuestion() {
 		try {
-			writer.println("Ask your questinon: ");
+			writer.println("Ask your question: ");
 			return reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -155,7 +154,6 @@ public class ClientPlayer implements Player, AutoCloseable {
 		try {
 			closeable.close();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
