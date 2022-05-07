@@ -24,10 +24,22 @@ public class ServerImpl implements Server {
 	
 	private final int players;
 
+	private final Thread serverThread;
+
 	public ServerImpl(int port, int players) throws IOException {
 		this.serverSocket = new ServerSocket(port);
 		this.players = players;
 		this.clientPlayers = new ArrayList<>(players);
+
+		Runnable waitForPlayer = () -> {
+			try {
+				this.waitForPlayers();
+			} catch (IOException exception) {
+				exception.printStackTrace();
+			}
+		};
+
+		this.serverThread = new Thread(waitForPlayer, "Server thread");
 	}
 
 	@Override
@@ -40,13 +52,7 @@ public class ServerImpl implements Server {
 	@Override
 	@PostConstruct
 	public void waitForPlayer() throws IOException {
-		System.out.println("Server starts");
-		System.out.println("Waiting for a client connect....");
-		for(int i = 0; i < players; i++) {
-			ClientPlayer clientPlayer = new ClientPlayer(serverSocket.accept());
-			clientPlayers.add(clientPlayer);
-		}
-		System.out.println(String.format("Got %d players. Starting a game.", players));
+		this.serverThread.start();
 	}
 
 	@Override
@@ -59,6 +65,25 @@ public class ServerImpl implements Server {
 				System.err.println(String.format("Could not close a socket (%s)", e.getMessage()));
 			}
 		}
+
+		try {
+			this.serverSocket.close();
+		} catch (IOException exception) {
+			System.err.printf("Cannot close a server: %s%n", exception.getMessage());
+		}
+
+		this.serverThread.interrupt();
+	}
+
+
+	public void waitForPlayers() throws IOException {
+		System.out.println("Server starts");
+		System.out.println("Waiting for a client connect....");
+		for(int i = 0; i < players; i++) {
+			ClientPlayer clientPlayer = new ClientPlayer(serverSocket.accept());
+			clientPlayers.add(clientPlayer);
+		}
+		System.out.println(String.format("Got %d players. Starting a game.", players));
 	}
 
 }

@@ -12,4 +12,6 @@ public interface Game {
 	
 	void play();
 
+	boolean isAvailable();
+
 }

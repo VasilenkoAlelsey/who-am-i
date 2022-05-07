@@ -20,9 +20,6 @@ public class ClientPlayer implements Player, AutoCloseable {
 
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-	private String question;
-	private String character;
-
 	public ClientPlayer(Socket socket) throws IOException {
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -31,6 +28,7 @@ public class ClientPlayer implements Player, AutoCloseable {
 
 	@Override
 	public Future<String> getName() {
+		// TODO: save name for future
 		return executor.submit(this::askName);
 	}
 
@@ -47,80 +45,73 @@ public class ClientPlayer implements Player, AutoCloseable {
 	}
 
 	@Override
-	public Future<String> getQuestion() {
-		return executor.submit(this::giveQuestion);
-	}
+	public String getQuestion() {
+		String question = "";
 
-	private String giveQuestion() {
 		try {
-			writer.println("Ask your question: ");
-			return reader.readLine();
+			writer.println("Ask your questinon: ");
+			question = reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
-			return "";
 		}
+		return question;
 	}
 
 	@Override
-	public Future<String> answerQuestion(String question, String character) {
-		this.question = question;
-		this.character = character;
-		return executor.submit(this::getAnswerQuestion);
-	}
-
-	private String getAnswerQuestion() {
+	public String answerQuestion(String question, String character) {
+		String answer = "";
+		
 		try {
-			writer.println("Answer second player question: " + this.question + "Character is:"+ this.character);
-			return reader.readLine();
+			writer.println("Answer second player question: " + question + "Character is:"+ character);
+			answer = reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
-			return "";
 		}
+		
+		return answer;
 	}
 
 	@Override
-	public Future<String> getGuess() {
-		return executor.submit(this::giveGuess);
-	}
-
-	private String giveGuess() {
+	public String getGuess() {
+		String answer = "";
+		
+	
 		try {
 			writer.println("Write your guess: ");
-			return reader.readLine();
+			answer = reader.readLine();
 		} catch (IOException e) {
+
 			e.printStackTrace();
-			return "";
 		}
+		return answer;
 	}
 
 	@Override
-	public Future<String> isReadyForGuess() {
-		return executor.submit(this::getAvailableToRespond);
-	}
-
-	private String getAvailableToRespond() {
+	public boolean isReadyForGuess() {
+		String answer = "";
+		
 		try {
 			writer.println("Are you ready to guess? ");
-			return reader.readLine();
+			answer = reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
-			return "";
 		}
+		
+		return answer.equals("Yes") ? true : false;
 	}
 
 	@Override
-	public Future<String> answerGuess() {
-		return executor.submit(this::getAnswerGuess);
-	}
-
-	private String getAnswerGuess() {
+	public String answerGuess(String guess, String character) {
+		String answer = "";
+		
 		try {
 			writer.println("Write your answer: ");
-			return reader.readLine();
+			answer = reader.readLine();
 		} catch (IOException e) {
+
 			e.printStackTrace();
-			return "";
 		}
+		return answer;
 	}
 
 	@Override
@@ -154,6 +145,7 @@ public class ClientPlayer implements Player, AutoCloseable {
 		try {
 			closeable.close();
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

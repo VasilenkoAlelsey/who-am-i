@@ -1,6 +1,9 @@
 package com.eleks.academy.whoami.core.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -11,30 +14,26 @@ import java.util.stream.Collectors;
 import com.eleks.academy.whoami.core.Game;
 import com.eleks.academy.whoami.core.Player;
 import com.eleks.academy.whoami.core.Turn;
-import com.eleks.academy.whoami.exceptions.FailToObtainException;
+import com.eleks.academy.whoami.networking.client.ClientPlayer;
 
 public class RandomGame implements Game {
 
-	private static final int DURATION = 1;
+	private static final int DURATION = 2;
 	private static final TimeUnit UNIT = TimeUnit.MINUTES;
 
 	private Map<String, String> playersCharacter = new ConcurrentHashMap<>();
 	private final List<Player> players;
 	private final List<String> availableCharacters;
 	private Turn currentTurn;
-	private final Map<Player, String> playerNames = new HashMap<>();
 
+	
 	private final static String YES = "Yes";
 	private final static String NO = "No";
-
-	public RandomGame(List<Player> players, List<String> availableCharacters) {
+	
+	public RandomGame(List<Player> players, List<String> availableCharacters) { 
 		this.availableCharacters = new ArrayList<String>(availableCharacters);
 		this.players = new ArrayList<>(players.size());
 		players.forEach(this::addPlayer);
-	}
-
-	public List<Player> getPlayers() {
-		return players;
 	}
 
 	private void addPlayer(Player player) {
@@ -45,55 +44,49 @@ public class RandomGame implements Game {
 			this.players.add(player);
 			this.availableCharacters.add(character);
 		} catch (InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (TimeoutException e) {
-			System.err.printf("Player did not suggest a character within %d %s%n", DURATION, UNIT);
+			System.err.println("Player did not suggest a charatern within %d %s".formatted(DURATION, UNIT));
 		}
 	}
 
 	@Override
 	public boolean makeTurn() {
 		Player currentGuesser = currentTurn.getGuesser();
-		Set<Future<String>> answers;
+		Set<String> answers;
 		String guessersName;
 		try {
 			guessersName = currentGuesser.getName().get(DURATION, UNIT);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			throw new FailToObtainException("Failed to obtain a player's name", e);
+			// TODO: Add custom runtime exception implementation
+			throw new RuntimeException("Failed to obtain a player's name", e);
 		}
-		playerNames.put(currentGuesser, guessersName);
-		String guesserAnswer = String.valueOf(currentGuesser.isReadyForGuess());
-		if (guesserAnswer.equals("Yes")) {
-			String guess = String.valueOf(currentGuesser.getGuess());
+		if (currentGuesser.isReadyForGuess()) {
+			String guess = currentGuesser.getGuess();
 			answers = currentTurn.getOtherPlayers().stream()
-					.map(Player::answerGuess)
+					.map(player -> player.answerGuess(guess, this.playersCharacter.get(guessersName)))
 					.collect(Collectors.toSet());
-			long positiveCount = answers.stream().filter(a -> YES.equals(String.valueOf(a))).count();
-			long negativeCount = answers.stream().filter(a -> NO.equals(String.valueOf(a))).count();
-
+			long positiveCount = answers.stream().filter(a -> YES.equals(a)).count();
+			long negativeCount = answers.stream().filter(a -> NO.equals(a)).count();
+			
 			boolean win = positiveCount > negativeCount;
-
+			
 			if (win) {
 				players.remove(currentGuesser);
 			}
 			return win;
-
+			
 		} else {
-			String question;
-			try {
-				question = currentGuesser.getQuestion().get();
-			} catch (InterruptedException | ExecutionException e) {
-				throw new RuntimeException("Failed to obtain a player's question", e);
-			}
-			String playerQuestion = question;
+			String question = currentGuesser.getQuestion();
 			answers = currentTurn.getOtherPlayers().stream()
-				.map(player -> player.answerQuestion(playerQuestion, this.playersCharacter.get(guessersName)))
+				.map(player -> player.answerQuestion(question, this.playersCharacter.get(guessersName)))
 				.collect(Collectors.toSet());
-			long positiveCount = answers.stream().filter(a -> YES.equals(String.valueOf(a))).count();
-			long negativeCount = answers.stream().filter(a -> NO.equals(String.valueOf(a))).count();
+			long positiveCount = answers.stream().filter(a -> YES.equals(a)).count();
+			long negativeCount = answers.stream().filter(a -> NO.equals(a)).count();
 			return positiveCount > negativeCount;
 		}
-
+		
 	}
 
 	private void assignCharacters() {
@@ -103,15 +96,16 @@ public class RandomGame implements Game {
 				return f.get(DURATION, UNIT);
 			} catch (InterruptedException | ExecutionException e) {
 				Thread.currentThread().interrupt();
-				throw new FailToObtainException("Failed to obtain a player's name", e);
+				// TODO: Add custom runtime exception implementation
+				throw new RuntimeException("Failed to obtain a player's name", e);
 			} catch (TimeoutException e) {
 				// TODO: Choose a name from a pool of names, i.e. Anonymous Badger etc.
 				throw new RuntimeException("Player did not provide a name within %d %s".formatted(DURATION, UNIT));
 			}
 		}).forEach(name -> this.playersCharacter.put(name, this.getRandomCharacter()));
-
+		
 	}
-
+	
 	@Override
 	public void initGame() {
 		this.assignCharacters();
@@ -123,7 +117,7 @@ public class RandomGame implements Game {
 	public boolean isFinished() {
 		return players.size() == 1;
 	}
-
+	
 	private String getRandomCharacter() {
 		int randomPos = (int)(Math.random() * this.availableCharacters.size());
 		// TODO: Ensure player never receives own suggested character
@@ -138,7 +132,7 @@ public class RandomGame implements Game {
 	@Override
 	public void play() {
 		boolean gameStatus = true;
-
+		
 		while (gameStatus) {
 			boolean turnResult = this.makeTurn();
 
@@ -148,6 +142,11 @@ public class RandomGame implements Game {
 			this.changeTurn();
 			gameStatus = !this.isFinished();
 		}
+	}
+
+	@Override
+	public boolean isAvailable() {
+		return !this.availableCharacters.isEmpty();
 	}
 
 }
