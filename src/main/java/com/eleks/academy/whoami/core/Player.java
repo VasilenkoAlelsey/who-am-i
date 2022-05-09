@@ -4,6 +4,10 @@ import java.util.concurrent.Future;
 
 public interface Player {
 
+	default String getId() {
+		throw new UnsupportedOperationException();
+	}
+
 	Future<String> getName();
 	
 	Future<String> suggestCharacter();
