@@ -13,8 +13,10 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class NewGameRequest {
 
-    @NotNull
-    @Min(2)
-    @Max(4)
-    private Integer maxPlayers;
+	//TODO: Retrieve from config
+	@Min(2)
+	@Max(4)
+	@NotNull
+	private Integer maxPlayers;
+
 }

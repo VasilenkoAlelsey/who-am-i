@@ -144,9 +144,4 @@ public class RandomGame implements Game {
 		}
 	}
 
-	@Override
-	public boolean isAvailable() {
-		return !this.availableCharacters.isEmpty();
-	}
-
 }

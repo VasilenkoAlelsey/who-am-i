@@ -14,12 +14,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class GameControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+	@Autowired
+	private MockMvc mockMvc;
 
-    @Test
-    void findAvailableGames() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/games")).andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0]").doesNotHaveJsonPath());
-    }
+	@Test
+	void findAvailableGames() throws Exception {
+		this.mockMvc.perform(
+						MockMvcRequestBuilders.get("/games")
+								.header("X-Player", "player")
+				)
+				.andExpect(status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$[0]").doesNotHaveJsonPath());
+	}
+
 }

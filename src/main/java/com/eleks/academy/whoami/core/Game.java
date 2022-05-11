@@ -1,22 +1,11 @@
 package com.eleks.academy.whoami.core;
 
-import java.util.List;
+import com.eleks.academy.whoami.core.impl.Answer;
 
+// TODO: Change default methods to abstract, drop the old version ones
 public interface Game {
 
 	default String getId() {
-		throw new UnsupportedOperationException();
-	}
-
-	default boolean isReadyToStart() {
-		throw new UnsupportedOperationException();
-	}
-
-	default boolean hasPlayer(String player) {
-		throw new UnsupportedOperationException();
-	}
-
-	default void addPlayer(String player) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -24,7 +13,20 @@ public interface Game {
 		throw new UnsupportedOperationException();
 	}
 
-	default List<String> getPlayers() {
+	default boolean hasPlayer(String player) {
+		throw new UnsupportedOperationException();
+	}
+
+	default String getStatus() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Presentational purpose only
+	 *
+	 * @return the info of how many players have already joined the game
+	 */
+	default String getPlayersInGame() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -32,22 +34,18 @@ public interface Game {
 		throw new UnsupportedOperationException();
 	}
 
-	default void startGame() {
-		throw new UnsupportedOperationException();
-	}
-
-	default void suggestCharacter(String player, String character) {
+	default void makeTurn(Answer answer) {
 		throw new UnsupportedOperationException();
 	}
 
 	boolean makeTurn();
-	
+
 	boolean isFinished();
 
 	void changeTurn();
 
 	void initGame();
-	
+
 	void play();
 
 }

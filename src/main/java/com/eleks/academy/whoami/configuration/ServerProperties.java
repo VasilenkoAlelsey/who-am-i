@@ -4,16 +4,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
 
 @ConfigurationProperties(prefix = "game")
-public class ServerProperties {
+public record ServerProperties(int port, int players) {
 
 	private static final int NOT_ALLOWED_PORT_VALUE = 1024;
 
-	private final int port;
-	private final int players;
-
 	@ConstructorBinding
-	public ServerProperties(int port, int players) {
-		super();
+	public ServerProperties {
 		if (port < 0) {
 			throw new IllegalArgumentException(String.format("Port value cannot be negative value: %d", port));
 		}
@@ -28,16 +24,6 @@ public class ServerProperties {
 			throw new IllegalArgumentException(
 					String.format("Players value should be greater then %d, but provided %d", 2, players));
 		}
-		this.port = port;
-		this.players = players;
-	}
-
-	public int getPort() {
-		return port;
-	}
-
-	public int getPlayers() {
-		return players;
 	}
 
 }

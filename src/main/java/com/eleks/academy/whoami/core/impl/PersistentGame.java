@@ -1,173 +1,124 @@
 package com.eleks.academy.whoami.core.impl;
 
 import com.eleks.academy.whoami.core.Game;
-import com.eleks.academy.whoami.core.GameCharacter;
-import com.eleks.academy.whoami.core.Player;
-import lombok.Getter;
+import com.eleks.academy.whoami.core.state.GameState;
+import com.eleks.academy.whoami.core.state.WaitingForPlayers;
 
 import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
-import static com.eleks.academy.whoami.core.impl.GameStatus.SUGGESTING_CHARACTERS;
-import static com.eleks.academy.whoami.core.impl.GameStatus.WAITING_FOR_PLAYERS;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
-
-@Getter
 public class PersistentGame implements Game {
 
-    private String id;
-    private Integer maxPlayers;
-    private final Map<String, Player> players = new ConcurrentHashMap<>();
+	private final Lock turnLock = new ReentrantLock();
 
-    private final Map<String, List<GameCharacter>> suggestedCharacters = new ConcurrentHashMap<>();
-    private final Map<String, String> playerCharacterMap = new ConcurrentHashMap<>();
+	private final String id;
 
-    private final List<String> turns = new ArrayList<>();
+	private final Queue<GameState> turns = new LinkedBlockingQueue<>();
 
-    private GameStatus gameStatus;
+	/**
+	 * Creates a new game (game room) and makes a first enrolment turn by a current player
+	 * so that he won't have to enroll to the game he created
+	 *
+	 * @param hostPlayer player to initiate a new game
+	 */
+	public PersistentGame(String hostPlayer, Integer maxPlayers) {
+		this.id = String.format("%d-%d",
+				Instant.now().toEpochMilli(),
+				Double.valueOf(Math.random() * 999).intValue());
 
-    private Integer currentPlayerIndex;
+		this.turns.add(GameState.start(hostPlayer, maxPlayers));
+	}
 
-    public PersistentGame(String hostPlayer, Integer maxPlayers) {
-        this.id = String.format("%d-%d",
-                Instant.now().toEpochMilli(),
-                Double.valueOf(Math.random() * 999).intValue());
-        this.maxPlayers = maxPlayers;
+	@Override
+	public String getId() {
+		return this.id;
+	}
 
-        this.players.put(hostPlayer, PersistentPlayer.of(hostPlayer));
-        this.turns.add(hostPlayer);
-        this.gameStatus = WAITING_FOR_PLAYERS;
-    }
+	// TODO: Implement an exit mechanism (separate response) in case {@code this.turns} is empty
+	@Override
+	public void makeTurn(Answer answer) {
+		this.turnLock.lock();
 
-    @Override
-    public String getId() {
-        return this.id;
-    }
+		try {
+			Optional.ofNullable(this.turns.poll())
+					.map(gameState -> gameState.makeTurn(answer))
+					.ifPresent(this.turns::add);
+		} finally {
+			this.turnLock.unlock();
+		}
+	}
 
-    @Override
-    public boolean isAvailable() {
-        return WAITING_FOR_PLAYERS.equals(this.gameStatus);
-    }
+	@Override
+	public boolean isAvailable() {
+		return this.turns.peek() instanceof WaitingForPlayers;
+	}
 
-    @Override
-    public boolean isReadyToStart() {
-        final var statusApplicable = SUGGESTING_CHARACTERS.equals(this.gameStatus);
+	@Override
+	public boolean hasPlayer(String player) {
+		return this.applyIfPresent(this.turns.peek(), t -> t.hasPlayer(player), Boolean.FALSE);
+	}
 
-        final var enoughCharacters = Optional.of(this.suggestedCharacters)
-                .map(Map::values)
-                .stream()
-                .mapToLong(Collection::size)
-                .sum() >= this.players.size();
+	@Override
+	public String getTurn() {
+		return this.applyIfPresent(this.turns.peek(), GameState::getCurrentTurn);
+	}
 
-        return statusApplicable
-                && this.suggestedCharacters.size() > 1
-                && enoughCharacters;
-    }
+	@Override
+	public String getStatus() {
+		return this.applyIfPresent(this.turns.peek(), GameState::getStatus);
+	}
 
-    @Override
-    public boolean hasPlayer(String player) {
-        return this.players.containsKey(player);
-    }
+	@Override
+	public String getPlayersInGame() {
+		Function<GameState, String> playersCountExtractor = gameState ->
+				"%d/%d".formatted(gameState.getPlayersInGame(), gameState.getMaxPlayers());
 
-    @Override
-    public void addPlayer(String player) {
-        this.players.put(player, PersistentPlayer.of(player));
-        this.turns.add(player);
+		return this.applyIfPresent(this.turns.peek(), playersCountExtractor);
+	}
 
-        Optional.of(this.players.size())
-                .filter(playersSize -> playersSize.equals(this.maxPlayers))
-                .ifPresent(then -> this.setStatus(GameStatus.SUGGESTING_CHARACTERS));
-    }
+	@Override
+	public boolean isFinished() {
+		return this.turns.isEmpty();
+	}
 
-    @Override
-    public List<String> getPlayers() {
-        return new ArrayList<>(this.players.keySet());
-    }
+	// TODO: Questions, answers
+	// TODO: Guesses, answer
+	// TODO: Game finished game
+	// TODO: Drop unused methods
 
-    @Override
-    public String getTurn() {
-        return this.turns.get(this.currentPlayerIndex);
-    }
 
-    @Override
-    public void startGame() {
-        this.assignCharacters();
+	@Override
+	public boolean makeTurn() {
+		return false;
+	}
 
-        this.setStatus(GameStatus.WAITING_FOR_QUESTION);
+	@Override
+	public void changeTurn() {
 
-        this.currentPlayerIndex = 0;
-    }
+	}
 
-    public void suggestCharacter(String player, String character) {
-        List<GameCharacter> characters = this.suggestedCharacters.get(player);
+	@Override
+	public void initGame() {
 
-        if (Objects.isNull(characters)) {
-            final var newCharacters = new ArrayList<GameCharacter>();
+	}
 
-            this.suggestedCharacters.put(player, newCharacters);
+	@Override
+	public void play() {
 
-            characters = newCharacters;
-        }
+	}
 
-        characters.add(GameCharacter.of(character, player));
-    }
+	private <T, R> R applyIfPresent(T source, Function<T, R> mapper) {
+		return this.applyIfPresent(source, mapper, null);
+	}
 
-    @Override
-    public boolean makeTurn() {
-        return false;
-    }
-
-    @Override
-    public boolean isFinished() {
-        return false;
-    }
-
-    @Override
-    public void changeTurn() {
-
-    }
-
-    @Override
-    public void initGame() {
-
-    }
-
-    @Override
-    public void play() {
-
-    }
-
-    private void setStatus(GameStatus status) {
-        this.gameStatus = status;
-    }
-
-    private void assignCharacters() {
-        final var allCharacters = this.suggestedCharacters
-                .values()
-                .stream()
-                .flatMap(Collection::stream)
-                .collect(toList());
-
-        this.players.keySet()
-                .forEach(player -> {
-                    final var assignedCharacter =
-                            allCharacters.stream()
-                                    .filter(character -> Objects.equals(character.getAuthor(), player))
-                                    .collect(collectingAndThen(toList(), getRandomCharacter()));
-
-                    this.playerCharacterMap.put(player, assignedCharacter.getCharacter());
-                    allCharacters.remove(assignedCharacter);
-                });
-    }
-
-    private Function<List<GameCharacter>, GameCharacter> getRandomCharacter() {
-        return gameCharacter -> {
-            int randomPos = (int) (Math.random() * gameCharacter.size());
-
-            return gameCharacter.get(randomPos);
-        };
-    }
+	private <T, R> R applyIfPresent(T source, Function<T, R> mapper, R fallback) {
+		return Optional.ofNullable(source)
+				.map(mapper)
+				.orElse(fallback);
+	}
 }

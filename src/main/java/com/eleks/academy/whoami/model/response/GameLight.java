@@ -10,19 +10,19 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GameDetails {
+public class GameLight {
 
 	private String id;
 
 	private String status;
 
-	private String currentTurn;
+	private String playersInGame;
 
-	public static GameDetails of(Game game) {
-		return GameDetails.builder()
+	public static GameLight of(Game game) {
+		return GameLight.builder()
 				.id(game.getId())
 				.status(game.getStatus())
-				.currentTurn(game.getTurn())
+				.playersInGame(game.getPlayersInGame())
 				.build();
 	}
 

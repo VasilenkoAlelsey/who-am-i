@@ -1,17 +1,16 @@
 package com.eleks.academy.whoami.networking.server;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
 import com.eleks.academy.whoami.core.Game;
 import com.eleks.academy.whoami.core.Player;
 import com.eleks.academy.whoami.core.impl.RandomGame;
 import com.eleks.academy.whoami.networking.client.ClientPlayer;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerImpl implements Server {
 
@@ -21,7 +20,7 @@ public class ServerImpl implements Server {
 
 	private final ServerSocket serverSocket;
 	private final List<Player> clientPlayers;
-	
+
 	private final int players;
 
 	private final Thread serverThread;
@@ -44,25 +43,25 @@ public class ServerImpl implements Server {
 
 	@Override
 	public Game startGame() throws IOException {
-		RandomGame game = new RandomGame(clientPlayers ,characters);
+		RandomGame game = new RandomGame(clientPlayers, characters);
 		game.initGame();
 		return game;
 	}
 
 	@Override
 	@PostConstruct
-	public void waitForPlayer() throws IOException {
+	public void waitForPlayer() {
 		this.serverThread.start();
 	}
 
 	@Override
 	@PreDestroy
 	public void stop() {
-		for(Player player: clientPlayers) {
+		for (Player player : clientPlayers) {
 			try {
 				player.close();
 			} catch (Exception e) {
-				System.err.println(String.format("Could not close a socket (%s)", e.getMessage()));
+				System.err.printf("Could not close a socket (%s)%n", e.getMessage());
 			}
 		}
 
@@ -75,15 +74,14 @@ public class ServerImpl implements Server {
 		this.serverThread.interrupt();
 	}
 
-
-	public void waitForPlayers() throws IOException {
+	private void waitForPlayers() throws IOException {
 		System.out.println("Server starts");
 		System.out.println("Waiting for a client connect....");
-		for(int i = 0; i < players; i++) {
+		for (int i = 0; i < players; i++) {
 			ClientPlayer clientPlayer = new ClientPlayer(serverSocket.accept());
 			clientPlayers.add(clientPlayer);
 		}
-		System.out.println(String.format("Got %d players. Starting a game.", players));
+		System.out.printf("Got %d players. Starting a game.%n", players);
 	}
 
 }
