@@ -18,7 +18,7 @@ jobs:
         with:
           java-version: 17
 
-      - name: Run Test Coverege
+      - name: Run Test Coverage
         run: mvn -B test --file pom.xml
 
       - name: Upload a Build Artifact
