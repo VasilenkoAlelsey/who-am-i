@@ -38,7 +38,7 @@ jobs:
           debug-mode: false
 
       - name: Check Style for Java
-        uses: dbelyaev/action-checkstyle@v.0.5.1
+        uses: dbelyaev/action-checkstyle@v0.5.1
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
