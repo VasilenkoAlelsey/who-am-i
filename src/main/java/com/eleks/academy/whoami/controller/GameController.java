@@ -1,5 +1,6 @@
 package com.eleks.academy.whoami.controller;
 
+import com.eleks.academy.whoami.core.impl.TurnImpl;
 import com.eleks.academy.whoami.model.request.CharacterSuggestion;
 import com.eleks.academy.whoami.model.request.NewGameRequest;
 import com.eleks.academy.whoami.model.response.GameDetails;
@@ -8,10 +9,19 @@ import com.eleks.academy.whoami.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.eleks.academy.whoami.utils.StringUtils.Headers.PLAYER;
 
@@ -28,6 +38,7 @@ public class GameController {
 	}
 
 	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
 	public GameDetails createGame(@RequestHeader(PLAYER) String player,
 								  @Valid @RequestBody NewGameRequest gameRequest) {
 		return this.gameService.createGame(player, gameRequest);
@@ -43,14 +54,16 @@ public class GameController {
 
 	// TODO: Should return enrolled player
 	@PostMapping("/{id}/players")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void enrollToGame(@PathVariable("id") String id,
 							 @RequestHeader(PLAYER) String player) {
+		//////////////////////
+		System.out.println(id + " - " + player);
+		//////////////////////
 		this.gameService.enrollToGame(id, player);
 	}
 
 	@PostMapping("/{id}/characters")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@ResponseStatus(HttpStatus.OK)
 	public void suggestCharacter(@PathVariable("id") String id,
 								 @RequestHeader(PLAYER) String player,
 								 @Valid @RequestBody CharacterSuggestion suggestion) {
@@ -64,5 +77,4 @@ public class GameController {
 				.map(ResponseEntity::ok)
 				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
-
 }
